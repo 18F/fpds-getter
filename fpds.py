@@ -10,16 +10,15 @@ class FPDS:
         The powerhouse of the FPDS class. This iterates through the FPDS pages and returns a dict with all of the entries for a date range.
         """
         d = self._get_data_from_url(start_date, end_date, offset=0)
-
+        yield d
         # Here, we should call the generator to cycle through the range
         pages = range(int(parse_qs(urlparse(d["feed"]["link"][2]["@href"]).query)["start"][0]), int(parse_qs(urlparse(d["feed"]["link"][1]["@href"]).query)["start"][0]), 10)
-        results = []
 
         for page in pages:
             # I *think* this is where we can take advantage of parallel processing...
             d = self._get_data_from_url(start_date, end_date, page)
             # This is where the XML for the page comes in... at this point, it's possible to do things like save data to file or do additional processing.
-            results.append([entry for entry in d["feed"]["entry"]])
+            yield d
         return results
 
     def _get_data_from_url(self, start_date, end_date, offset):
